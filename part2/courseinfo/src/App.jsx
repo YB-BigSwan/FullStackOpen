@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import Course from "./components/Course";
 
 const App = () => {
