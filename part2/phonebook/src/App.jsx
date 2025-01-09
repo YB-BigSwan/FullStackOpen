@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Contacts from "./components/Contacts";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
-import axios from "axios";
+import contactService from "./services/contacts";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,9 +11,14 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      setPersons(response.data);
-    });
+    contactService
+      .getAll()
+      .then((data) => {
+        setPersons(data);
+      })
+      .catch((error) => {
+        alert("Failed to fetch contacts: " + error.message);
+      });
   }, []);
 
   const handleNameChange = (e) => {
@@ -28,31 +33,70 @@ const App = () => {
     setSearchQuery(e.target.value);
   };
 
+  const handleDelete = (id) => {
+    const contact = persons.find((person) => person.id === id);
+    if (window.confirm(`Delete ${contact.name}?`)) {
+      contactService
+        .deleteContact(id)
+        .then(() => {
+          setPersons(persons.filter((person) => person.id !== id));
+        })
+        .catch((error) => {
+          alert(`Failed to delete ${contact.name}: ${error.message}`);
+        });
+    }
+  };
+
   const addContact = (e) => {
     e.preventDefault();
-    const isDuplicateName = persons.find((person) => person.name === newName);
-    const isDuplicateNumber = persons.find(
-      (person) => person.number === newNumber
-    );
+    const isExistingContact = persons.find((person) => person.name === newName);
+    const clearInputs = () => {
+      setNewName("");
+      setNewNumber("");
+    };
 
-    if (isDuplicateName) {
-      alert(`${newName} is already added to the phonebook`);
-      setNewName("");
-      setNewNumber("");
-    } else if (isDuplicateNumber) {
-      alert(`${newNumber} belongs to ${isDuplicateNumber.name}`);
-      setNewName("");
-      setNewNumber("");
+    if (isExistingContact) {
+      const confirmUpdate = window.confirm(
+        `${newName} is already in the phonebook, replace the old number with the new one?`
+      );
+
+      if (!confirmUpdate) {
+        console.log(`Update canceled, ${isExistingContact.name} not updated.`);
+        clearInputs();
+        return;
+      }
+
+      const updatedContact = { ...isExistingContact, number: newNumber };
+
+      contactService
+        .update(isExistingContact.id, updatedContact)
+        .then((data) => {
+          setPersons(
+            persons.map((person) =>
+              person.id === isExistingContact.id ? data : person
+            )
+          );
+        })
+        .catch((error) => {
+          alert(`Failed to update ${newName}: ${error.message}`);
+        });
     } else {
       const newContact = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1,
       };
-      setPersons(persons.concat(newContact));
-      setNewName("");
-      setNewNumber("");
+
+      contactService
+        .create(newContact)
+        .then((data) => {
+          setPersons(persons.concat(data));
+        })
+        .catch((error) => {
+          alert(error);
+        });
     }
+
+    clearInputs();
   };
 
   return (
@@ -70,7 +114,11 @@ const App = () => {
         addContact={addContact}
       />
       <h2>Numbers</h2>
-      <Contacts persons={persons} searchQuery={searchQuery} />
+      <Contacts
+        persons={persons}
+        searchQuery={searchQuery}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };
