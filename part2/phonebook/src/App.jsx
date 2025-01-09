@@ -3,12 +3,15 @@ import Contacts from "./components/Contacts";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import contactService from "./services/contacts";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [message, setMessage] = useState(null);
+  const [notificationType, setNotificationType] = useState(null);
 
   useEffect(() => {
     contactService
@@ -17,9 +20,14 @@ const App = () => {
         setPersons(data);
       })
       .catch((error) => {
-        alert("Failed to fetch contacts: " + error.message);
+        setMessage("Failed to fetch contacts: " + error.message);
+        setNotificationType("error");
+        setTimeout(() => {
+          setMessage(null);
+          setNotificationType(null);
+        }, 5000);
       });
-  }, []);
+  }, [persons]);
 
   const handleNameChange = (e) => {
     setNewName(e.target.value);
@@ -40,16 +48,29 @@ const App = () => {
         .deleteContact(id)
         .then(() => {
           setPersons(persons.filter((person) => person.id !== id));
+          setMessage(`${contact.name} successfully deleted!`);
+          setNotificationType("success");
+          setTimeout(() => {
+            setMessage(null);
+            setNotificationType(null);
+          }, 5000);
         })
         .catch((error) => {
-          alert(`Failed to delete ${contact.name}: ${error.message}`);
+          setMessage(`Failed to delete ${contact.name}: ${error.message}`);
+          setNotificationType("error");
+          setTimeout(() => {
+            setMessage(null);
+            setNotificationType(null);
+          }, 5000);
         });
     }
   };
 
   const addContact = (e) => {
     e.preventDefault();
-    const isExistingContact = persons.find((person) => person.name === newName);
+    const isExistingContact = persons.find(
+      (person) => person.name.toLowerCase() === newName.toLowerCase()
+    );
     const clearInputs = () => {
       setNewName("");
       setNewNumber("");
@@ -61,7 +82,12 @@ const App = () => {
       );
 
       if (!confirmUpdate) {
-        console.log(`Update canceled, ${isExistingContact.name} not updated.`);
+        setMessage(`Update canceled, ${isExistingContact.name} not updated.`);
+        setNotificationType("error");
+        setTimeout(() => {
+          setMessage(null);
+          setNotificationType(null);
+        }, 5000);
         clearInputs();
         return;
       }
@@ -76,9 +102,29 @@ const App = () => {
               person.id === isExistingContact.id ? data : person
             )
           );
+          setMessage(
+            `${isExistingContact.name}'s number was successfully updated!`
+          );
+          setNotificationType("success");
+          setTimeout(() => {
+            setMessage(null);
+            setNotificationType(null);
+          }, 5000);
         })
         .catch((error) => {
-          alert(`Failed to update ${newName}: ${error.message}`);
+          if (error.response && error.response.status === 404) {
+            setMessage(
+              `${isExistingContact.name} was recently deleted, update failed.`
+            );
+            setNotificationType("error");
+          } else {
+            setMessage(`Failed to update ${newName}: ${error.message}.`);
+            setNotificationType("error");
+          }
+          setTimeout(() => {
+            setMessage(null);
+            setNotificationType(null);
+          }, 5000);
         });
     } else {
       const newContact = {
@@ -90,6 +136,12 @@ const App = () => {
         .create(newContact)
         .then((data) => {
           setPersons(persons.concat(data));
+          setMessage(`${newContact.name} added to the phonebook!`);
+          setNotificationType("success");
+          setTimeout(() => {
+            setMessage(null);
+            setNotificationType(null);
+          }, 5000);
         })
         .catch((error) => {
           alert(error);
@@ -100,26 +152,34 @@ const App = () => {
   };
 
   return (
-    <div>
-      <h2>Phonebook</h2>
-
-      <Filter searchQuery={searchQuery} handleQueryChange={handleQueryChange} />
-
-      <h2>Add new contact</h2>
-      <PersonForm
-        newName={newName}
-        newNumber={newNumber}
-        handleNameChange={handleNameChange}
-        handleNumberChange={handleNumberChange}
-        addContact={addContact}
-      />
-      <h2>Numbers</h2>
-      <Contacts
-        persons={persons}
-        searchQuery={searchQuery}
-        handleDelete={handleDelete}
-      />
-    </div>
+    <>
+      <h1>Phonebook</h1>
+      <div className="contacts-container">
+        <div className="sidebar">
+          <h2>Search</h2>
+          <Filter
+            searchQuery={searchQuery}
+            handleQueryChange={handleQueryChange}
+          />
+          <h2>Add Contact</h2>
+          <PersonForm
+            newName={newName}
+            newNumber={newNumber}
+            handleNameChange={handleNameChange}
+            handleNumberChange={handleNumberChange}
+            addContact={addContact}
+          />
+        </div>
+        <div className="contacts">
+          <Contacts
+            persons={persons}
+            searchQuery={searchQuery}
+            handleDelete={handleDelete}
+          />
+          <Notification message={message} type={notificationType} />
+        </div>
+      </div>
+    </>
   );
 };
 

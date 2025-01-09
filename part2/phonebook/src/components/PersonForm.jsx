@@ -8,11 +8,13 @@ const PersonForm = ({
 }) => {
   return (
     <form onSubmit={addContact}>
-      <div>
-        name: <input value={newName} onChange={handleNameChange} />
+      <div className="input-field">
+        <label htmlFor="name">Name</label>
+        <input name="name" value={newName} onChange={handleNameChange} />
       </div>
-      <div>
-        number: <input value={newNumber} onChange={handleNumberChange} />
+      <div className="input-field">
+        <label htmlFor="number">Number</label>
+        <input name="number" value={newNumber} onChange={handleNumberChange} />
       </div>
       <div>
         <button type="submit">add</button>

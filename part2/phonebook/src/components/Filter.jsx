@@ -2,7 +2,7 @@
 const Filter = ({ searchQuery, handleQueryChange }) => {
   return (
     <div>
-      Search: <input value={searchQuery} onChange={handleQueryChange} />
+      <input value={searchQuery} onChange={handleQueryChange} />
     </div>
   );
 };
