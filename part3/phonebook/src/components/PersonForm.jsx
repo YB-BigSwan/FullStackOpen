@@ -9,11 +9,11 @@ const PersonForm = ({
   return (
     <form onSubmit={addContact}>
       <div className="input-field">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name">Name:</label>
         <input name="name" value={newName} onChange={handleNameChange} />
       </div>
       <div className="input-field">
-        <label htmlFor="number">Number</label>
+        <label htmlFor="number">Number:</label>
         <input name="number" value={newNumber} onChange={handleNumberChange} />
       </div>
       <div>

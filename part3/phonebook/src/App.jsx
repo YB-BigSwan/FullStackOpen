@@ -27,7 +27,7 @@ const App = () => {
           setNotificationType(null);
         }, 5000);
       });
-  }, [persons]);
+  }, []);
 
   const handleNameChange = (e) => {
     setNewName(e.target.value);
