@@ -73,6 +73,17 @@ const App = () => {
 
   const addContact = (e) => {
     e.preventDefault();
+
+    if (newName === "" || newNumber === "") {
+      setMessage("Name or number field missing, please enter and try again");
+      setNotificationType("error");
+      setTimeout(() => {
+        setMessage(null);
+        setNotificationType(null);
+      }, 5000);
+      return;
+    }
+
     const isExistingContact = persons.find(
       (person) => person.name.toLowerCase() === newName.toLowerCase()
     );
