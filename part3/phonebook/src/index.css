@@ -47,6 +47,14 @@ body {
   overflow: scroll;
 }
 
+.contact-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
 .notification {
   display: flex;
   justify-content: center;

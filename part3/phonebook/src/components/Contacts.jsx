@@ -9,8 +9,10 @@ const Contacts = ({ persons, searchQuery, handleDelete }) => {
   return (
     <div>
       {renderContacts.map((person) => (
-        <p key={person.id}>
-          {person.name} {person.number}{" "}
+        <p key={person.id} className="contact-row">
+          <span>
+            {person.name} {person.number}
+          </span>
           <button onClick={() => handleDelete(person.id)}>Delete</button>
         </p>
       ))}
