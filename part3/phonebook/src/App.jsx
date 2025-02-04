@@ -146,7 +146,9 @@ const App = () => {
           );
           setNotificationType("error");
         } else {
-          setMessage(`Failed to update ${newName}: ${error.message}.`);
+          setMessage(
+            `Failed to update ${newName}: ${error.response.data.error}.`
+          );
           setNotificationType("error");
         }
         toastTimeout();
