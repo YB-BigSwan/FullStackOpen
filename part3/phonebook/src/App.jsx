@@ -18,6 +18,13 @@ const App = () => {
     setNewNumber("");
   };
 
+  const toastTimeout = () => {
+    setTimeout(() => {
+      setMessage(null);
+      setNotificationType(null);
+    }, 5000);
+  };
+
   useEffect(() => {
     contactService
       .getAll()
@@ -27,10 +34,7 @@ const App = () => {
       .catch((error) => {
         setMessage("Failed to fetch contacts: " + error.message);
         setNotificationType("error");
-        setTimeout(() => {
-          setMessage(null);
-          setNotificationType(null);
-        }, 5000);
+        toastTimeout();
       });
   }, []);
 
@@ -55,18 +59,12 @@ const App = () => {
           setPersons(persons.filter((person) => person.id !== id));
           setMessage(`${contact.name} successfully deleted!`);
           setNotificationType("success");
-          setTimeout(() => {
-            setMessage(null);
-            setNotificationType(null);
-          }, 5000);
+          toastTimeout();
         })
         .catch((error) => {
           setMessage(`Failed to delete ${contact.name}: ${error.message}`);
           setNotificationType("error");
-          setTimeout(() => {
-            setMessage(null);
-            setNotificationType(null);
-          }, 5000);
+          toastTimeout();
         });
     }
   };
@@ -77,10 +75,7 @@ const App = () => {
     if (newName === "" || newNumber === "") {
       setMessage("Name or number field missing, please enter and try again");
       setNotificationType("error");
-      setTimeout(() => {
-        setMessage(null);
-        setNotificationType(null);
-      }, 5000);
+      toastTimeout();
       return;
     }
 
@@ -102,13 +97,13 @@ const App = () => {
           setPersons(persons.concat(data));
           setMessage(`${newContact.name} added to the phonebook!`);
           setNotificationType("success");
-          setTimeout(() => {
-            setMessage(null);
-            setNotificationType(null);
-          }, 5000);
+          toastTimeout();
         })
         .catch((error) => {
-          alert(error);
+          console.log(error.response.data.error);
+          setMessage(error.response.data.error);
+          setNotificationType("error");
+          toastTimeout();
         });
     }
 
@@ -123,10 +118,7 @@ const App = () => {
     if (!confirmUpdate) {
       setMessage(`Update canceled, ${isExistingContact.name} not updated.`);
       setNotificationType("error");
-      setTimeout(() => {
-        setMessage(null);
-        setNotificationType(null);
-      }, 5000);
+      toastTimeout();
       clearInputs();
       return;
     }
@@ -145,10 +137,7 @@ const App = () => {
           `${isExistingContact.name}'s number was successfully updated!`
         );
         setNotificationType("success");
-        setTimeout(() => {
-          setMessage(null);
-          setNotificationType(null);
-        }, 5000);
+        toastTimeout();
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {
@@ -160,10 +149,7 @@ const App = () => {
           setMessage(`Failed to update ${newName}: ${error.message}.`);
           setNotificationType("error");
         }
-        setTimeout(() => {
-          setMessage(null);
-          setNotificationType(null);
-        }, 5000);
+        toastTimeout();
       });
   };
 
