@@ -13,6 +13,11 @@ const App = () => {
   const [message, setMessage] = useState(null);
   const [notificationType, setNotificationType] = useState(null);
 
+  const clearInputs = () => {
+    setNewName("");
+    setNewNumber("");
+  };
+
   useEffect(() => {
     contactService
       .getAll()
@@ -71,61 +76,9 @@ const App = () => {
     const isExistingContact = persons.find(
       (person) => person.name.toLowerCase() === newName.toLowerCase()
     );
-    const clearInputs = () => {
-      setNewName("");
-      setNewNumber("");
-    };
 
     if (isExistingContact) {
-      const confirmUpdate = window.confirm(
-        `${newName} is already in the phonebook, replace the old number with the new one?`
-      );
-
-      if (!confirmUpdate) {
-        setMessage(`Update canceled, ${isExistingContact.name} not updated.`);
-        setNotificationType("error");
-        setTimeout(() => {
-          setMessage(null);
-          setNotificationType(null);
-        }, 5000);
-        clearInputs();
-        return;
-      }
-
-      const updatedContact = { ...isExistingContact, number: newNumber };
-
-      contactService
-        .update(isExistingContact.id, updatedContact)
-        .then((data) => {
-          setPersons(
-            persons.map((person) =>
-              person.id === isExistingContact.id ? data : person
-            )
-          );
-          setMessage(
-            `${isExistingContact.name}'s number was successfully updated!`
-          );
-          setNotificationType("success");
-          setTimeout(() => {
-            setMessage(null);
-            setNotificationType(null);
-          }, 5000);
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === 404) {
-            setMessage(
-              `${isExistingContact.name} was recently deleted, update failed.`
-            );
-            setNotificationType("error");
-          } else {
-            setMessage(`Failed to update ${newName}: ${error.message}.`);
-            setNotificationType("error");
-          }
-          setTimeout(() => {
-            setMessage(null);
-            setNotificationType(null);
-          }, 5000);
-        });
+      updateContact(isExistingContact);
     } else {
       const newContact = {
         name: newName,
@@ -149,6 +102,58 @@ const App = () => {
     }
 
     clearInputs();
+  };
+
+  const updateContact = (isExistingContact) => {
+    const confirmUpdate = window.confirm(
+      `${newName} is already in the phonebook, replace the old number with the new one?`
+    );
+
+    if (!confirmUpdate) {
+      setMessage(`Update canceled, ${isExistingContact.name} not updated.`);
+      setNotificationType("error");
+      setTimeout(() => {
+        setMessage(null);
+        setNotificationType(null);
+      }, 5000);
+      clearInputs();
+      return;
+    }
+
+    const updatedContact = { ...isExistingContact, number: newNumber };
+
+    contactService
+      .update(isExistingContact.id, updatedContact)
+      .then((data) => {
+        setPersons(
+          persons.map((person) =>
+            person.id === isExistingContact.id ? data : person
+          )
+        );
+        setMessage(
+          `${isExistingContact.name}'s number was successfully updated!`
+        );
+        setNotificationType("success");
+        setTimeout(() => {
+          setMessage(null);
+          setNotificationType(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          setMessage(
+            `${isExistingContact.name} was recently deleted, update failed.`
+          );
+          setNotificationType("error");
+        } else {
+          setMessage(`Failed to update ${newName}: ${error.message}.`);
+          setNotificationType("error");
+        }
+        setTimeout(() => {
+          setMessage(null);
+          setNotificationType(null);
+        }, 5000);
+      });
   };
 
   return (
