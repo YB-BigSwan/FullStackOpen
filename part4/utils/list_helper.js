@@ -1,4 +1,6 @@
 /* eslint-disable @stylistic/js/indent */
+const _ = require("lodash");
+
 const dummy = (blogs) => {
   return 1;
 };
@@ -32,8 +34,48 @@ const favoriteBlog = (blogs) => {
       };
 };
 
+const mostBlogs = (blogs) => {
+  if (blogs.length === 0) return "Error: No blogs to search";
+
+  const authorBlogCounts = _(blogs)
+    .countBy("author")
+    .toPairs()
+    .map(([author, count]) => ({ author, blogs: count }))
+    .value();
+
+  const maxBlogs = Math.max(...authorBlogCounts.map((entry) => entry.blogs));
+
+  const topAuthors = authorBlogCounts.filter(
+    (entry) => entry.blogs === maxBlogs
+  );
+
+  return topAuthors.length > 1 ? topAuthors : topAuthors[0];
+};
+
+const mostLikes = (blogs) => {
+  if (blogs.length === 0) return "Error: No blogs to search";
+
+  const authorLikeCounts = _(blogs)
+    .groupBy("author")
+    .map((authorBlogs, author) => ({
+      author,
+      likes: _.sumBy(authorBlogs, "likes"),
+    }))
+    .value();
+
+  const maxLikes = Math.max(...authorLikeCounts.map((entry) => entry.likes));
+
+  const topAuthors = authorLikeCounts.filter(
+    (entry) => entry.likes === maxLikes
+  );
+
+  return topAuthors.length > 1 ? topAuthors : topAuthors[0];
+};
+
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
+  mostLikes,
 };
